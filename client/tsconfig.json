@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "types": [
+      "@koishijs/client/global",
+      "../lib",
+    ],
+  },
+  "include": ["."],
+}
