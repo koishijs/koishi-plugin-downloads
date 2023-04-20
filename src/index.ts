@@ -1,4 +1,6 @@
+import { resolve } from 'path'
 import { Context, Schema } from 'koishi'
+import {} from '@koishijs/plugin-console'
 import { Downloads } from './service'
 
 export interface Config {
@@ -12,5 +14,13 @@ export const Config: Schema<Config> = Schema.object({
 export const name = 'downloads'
 
 export function apply(ctx: Context, config: Config) {
+  ctx.using(['console'], (ctx) => {
+    ctx.console.addEntry({
+      dev: resolve(__dirname, '../client/index.ts'),
+      prod: resolve(__dirname, '../dist'),
+    })
+  })
   ctx.plugin(Downloads, config)
 }
+
+export * from './service'
