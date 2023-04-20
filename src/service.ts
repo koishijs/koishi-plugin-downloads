@@ -14,13 +14,16 @@ declare module '@koishijs/plugin-console' {
   }
 }
 
-export interface DownloadsClientData {
-
+export interface ClientTask {
+  name: string
+  progress: number
+  status: 'check' | 'download' | 'pause' | 'done'
+  indeterminate: boolean
 }
 
-export class Downloads extends DataService<DownloadsClientData> {
+export class Downloads extends DataService<ClientTask[]> {
   tasks: Record<string, State> = {}
-  data: DownloadsClientData = {}
+  clientTasks: ClientTask[] = []
   constructor(public ctx: Context, public config: Config) {
     super(ctx, 'downloads')
   }
@@ -37,6 +40,6 @@ export class Downloads extends DataService<DownloadsClientData> {
   }
 
   async get() {
-    return this.data
+    return this.clientTasks
   }
 }

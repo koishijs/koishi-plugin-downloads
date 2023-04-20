@@ -1,11 +1,18 @@
 <template>
   <k-layout main="darker">
     <div class="downloads">
-      <virtual-list :data="list" #="data">
+      <div v-if="list.length === 0" class="empty">
+        <div>当前没有需要进行的下载任务。</div>
+      </div>
+      <virtual-list v-else :data="list" #="data">
         <div class="task">
           <div class="name">{{ data.name }}</div>
-          <el-progress class="progress" v-if="data.progress !== 1" :percentage="data.progress * 100" />
-          <el-progress class="progress" v-else status="success" :percentage="100" />
+          <el-progress
+            class="progress"
+            :status="data.status === 'done' ? 'success' : null"
+            :indeterminate="data.status === 'check'"
+            :percentage="data.progress * 100" />
+          <el-button circle :icon="Pause" />
         </div>
       </virtual-list>
     </div>
@@ -19,26 +26,26 @@
 import { VirtualList } from '@koishijs/client'
 import { store, send, receive } from '@koishijs/client'
 import { computed, ref } from 'vue'
+import { Pause } from './icons'
+import {} from '..'
 
-const data = [
-  { name: 'go-cqhttp1', progress: 0.5 },
-  { name: 'go-cqhttp2', progress: 0.6 },
-  { name: 'go-cqhttp3', progress: 0.7 },
-  { name: 'go-cqhttp4', progress: 1   },
-  { name: 'go-cqhttp5', progress: 0.5 },
-  { name: 'go-cqhttp6', progress: 1   },
-  { name: 'go-cqhttp7', progress: 0.5 },
-]
-
-const list = computed(() => data.sort((_, b) => b.progress === 1 ? -1 : 1))
+const list = computed(() => store.downloads.sort((_, b) => b.progress === 1 ? -1 : 1))
 
 </script>
 
 <style scoped>
-
 .downloads {
   height: 100%;
   padding: 5px;
+}
+
+.empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
 }
 
 .task {
@@ -55,12 +62,18 @@ const list = computed(() => data.sort((_, b) => b.progress === 1 ? -1 : 1))
   margin: 0 10px 0 10px;
 }
 
+.name {
+  line-height: 30px;
+}
+
 .progress {
   flex-grow: 1;
 }
 
 .status {
-  width: 300px;
+  width: 350px;
+  height: 100%;
+  background-color: var(--bg2);
+  border-left: var(--border) 1px solid;
 }
-
 </style>
