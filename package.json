@@ -6,7 +6,8 @@
   "author": "Anillc <void@anillc.cn>",
   "license": "MIT",
   "dependencies": {
-    "nereid": "^0.0.3"
+    "nereid": "^0.0.3",
+    "throttle-debounce": "^5.0.0"
   },
   "peerDependencies": {
     "koishi": "^4.12.5"

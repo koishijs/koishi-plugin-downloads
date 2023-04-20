@@ -4,20 +4,25 @@
       <div v-if="list.length === 0" class="empty">
         <div>当前没有需要进行的下载任务。</div>
       </div>
-      <virtual-list v-else :data="list" #="data">
+      <virtual-list v-else :data="list" #="task">
         <div class="task">
-          <div class="name">{{ data.name }}</div>
+          <div class="name">{{ task.name }}</div>
           <el-progress
             class="progress"
-            :status="data.status === 'done' ? 'success' : null"
-            :indeterminate="data.status === 'check'"
-            :percentage="data.progress * 100" />
-          <el-button circle :icon="Pause" />
+            :status="status(task)"
+            :indeterminate="indeterminate(task)"
+            :percentage="indeterminate(task) ? 50 : task.progress * 100" />
+          <el-button
+            circle
+            :icon="downloading(task) ? Pause : Play"
+            @click="toggle(task)" />
         </div>
       </virtual-list>
     </div>
     <template #right>
-      <div class="status"></div>
+      <div class="status">
+        <div>{{ message }}</div>
+      </div>
     </template>
   </k-layout>
 </template>
@@ -26,10 +31,50 @@
 import { VirtualList } from '@koishijs/client'
 import { store, send, receive } from '@koishijs/client'
 import { computed, ref } from 'vue'
-import { Pause } from './icons'
-import {} from '..'
+import { Play, Pause } from './icons'
+import { ClientTask } from '..'
 
 const list = computed(() => store.downloads.sort((_, b) => b.progress === 1 ? -1 : 1))
+const message = ref('')
+
+receive('download/message', (text) => {
+  message.value = text
+})
+
+function status(task: ClientTask) {
+  if (indeterminate(task)) {
+    return 'warning'
+  }
+  switch (task.status) {
+    case 'downloading':
+    case 'checking':
+    case 'linking':
+    case 'pause':
+      return null
+    case 'canceled':
+    case 'failed':
+      return 'exception'
+    case 'done':
+      return 'success'
+  }
+}
+
+function indeterminate(task: ClientTask) {
+  return ['checking', 'linking'].includes(task.status)
+}
+
+function downloading(task: ClientTask) {
+  return ['checking', 'downloading', 'linking'].includes(task.status)
+}
+
+function toggle(task: ClientTask) {
+  const pause = downloading(task)
+  if (pause) {
+    send('download/pause', task.name)
+  } else {
+    send('download/start', task.name)
+  }
+}
 
 </script>
 
@@ -75,5 +120,8 @@ const list = computed(() => store.downloads.sort((_, b) => b.progress === 1 ? -1
   height: 100%;
   background-color: var(--bg2);
   border-left: var(--border) 1px solid;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
