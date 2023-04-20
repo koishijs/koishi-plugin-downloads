@@ -52,16 +52,51 @@ export class Downloads extends DataService<ClientTask[]> {
     }, { authority: 3 })
   }
 
-  start(): void {
-    this.task('www', [], 'xxx')
-  }
-
   task(name: string, srcs: string[], bucket: string, options?: ResolveOptions): State {
     const restart = () => {
-      return sync(srcs, bucket, {
+      const state = sync(srcs, bucket, {
         ...options,
         output: this.config.output,
       })
+      state.on('download/start', () => {
+        this.message(`${name} 开始下载`)
+        this.refresh()
+      })
+      state.on('check/failed', (error) => {
+        this.message(error.message)
+        this.refresh()
+      })
+      state.on('download/done', () => {
+        this.message(`${name} 下载完成`)
+        this.refresh()
+      })
+      state.on('download/failed', (error) => {
+        this.message(error.message)
+        this.refresh()
+      })
+      state.on('download/composable/start', (composable) => {
+        this.message(`${composable.hash} 开始下载`)
+        this.refresh()
+      })
+      state.on('download/composable/retry', (composable) => {
+        this.message(`${composable.hash} 将重试`)
+        this.refresh()
+      })
+      state.on('download/composable/done', (composable) => {
+        this.message(`${composable.hash} 下载成功`)
+        this.refresh()
+      })
+      state.on('link/start', () => this.refresh())
+      state.on('link/done', () => this.refresh())
+      state.on('link/failed', (error) => {
+        this.message(error.message)
+        this.refresh()
+      })
+      state.on('done', () => {
+        this.message(`${name} 下载成功`)
+        this.refresh()
+      })
+      return state
     }
     const state = restart()
     this.tasks[name] = [state, restart]

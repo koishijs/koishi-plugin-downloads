@@ -1,9 +1,7 @@
 <template>
   <k-layout main="darker">
     <div class="downloads">
-      <div v-if="list.length === 0" class="empty">
-        <div>当前没有需要进行的下载任务。</div>
-      </div>
+      <el-empty v-if="list.length === 0" class="empty" description="当前没有需要进行的下载任务。" />
       <virtual-list v-else :data="list" #="task">
         <div class="task">
           <div class="name">{{ task.name }}</div>
@@ -87,10 +85,6 @@ function toggle(task: ClientTask) {
 .empty {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
 }
 
 .task {
