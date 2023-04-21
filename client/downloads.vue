@@ -9,7 +9,7 @@
             class="progress"
             :status="status(task)"
             :indeterminate="indeterminate(task)"
-            :percentage="indeterminate(task) ? 50 : task.progress * 100" />
+            :percentage="indeterminate(task) ? 50 : Math.round(task.progress * 1000) / 10" />
           <el-button
             circle
             :icon="downloading(task) ? Pause : Play"
@@ -26,8 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-import { VirtualList } from '@koishijs/client'
-import { store, send, receive } from '@koishijs/client'
+import { VirtualList, store, send, receive } from '@koishijs/client'
 import { computed, ref } from 'vue'
 import { Play, Pause } from './icons'
 import { ClientTask } from '..'

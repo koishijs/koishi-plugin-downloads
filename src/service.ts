@@ -52,6 +52,12 @@ export class Downloads extends DataService<ClientTask[]> {
     }, { authority: 3 })
   }
 
+  start() {
+    this.ctx.setInterval(() => {
+      this.refresh()
+    }, 3000)
+  }
+
   task(name: string, srcs: string[], bucket: string, options?: ResolveOptions): State {
     const restart = () => {
       const state = sync(srcs, bucket, {
