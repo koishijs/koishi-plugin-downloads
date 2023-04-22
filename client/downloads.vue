@@ -1,5 +1,6 @@
 <template>
-  <k-layout main="darker">
+  <k-layout :menu="menu">
+    <template #header>下载</template>
     <div class="downloads">
       <el-empty v-if="list.length === 0" class="empty" description="当前没有需要进行的下载任务。" />
       <virtual-list v-else :data="list" #="task">
@@ -34,6 +35,12 @@ import { ClientTask } from '..'
 
 const list = computed(() => store.downloads.sort((_, b) => b.progress === 1 ? -1 : 1))
 const message = ref('')
+
+const menu = [{
+  icon: 'folder-open',
+  label: '打开下载目录',
+  action: () => send('download/open-folder'),
+}]
 
 receive('download/message', (text) => {
   message.value = text

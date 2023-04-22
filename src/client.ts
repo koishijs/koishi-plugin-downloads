@@ -2,6 +2,7 @@ import { Context } from 'koishi'
 import { DataService } from '@koishijs/plugin-console'
 import { State } from 'nereid'
 import { debounce } from 'throttle-debounce'
+import open from 'open'
 import { Config } from '.'
 
 declare module '@koishijs/plugin-console' {
@@ -15,6 +16,7 @@ declare module '@koishijs/plugin-console' {
     'download/start'(name: string): void
     'download/pause'(name: string): void
     'download/message'(text: string): void
+    'download/open-folder'(): void
   }
 }
 
@@ -47,6 +49,9 @@ export class ClientDownloads extends DataService<ClientTask[]> {
     ctx.console.addListener('download/pause', (name) => {
       this.tasks[name]?.[0].pause()
       this.refresh()
+    }, { authority: 3 })
+    ctx.console.addListener('download/open-folder', () => {
+      open(config.output)
     }, { authority: 3 })
   }
 
