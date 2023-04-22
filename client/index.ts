@@ -3,7 +3,7 @@ import './icons'
 
 export default defineExtension(ctx => {
   ctx.page({
-    name: 'downloads',
+    name: '下载',
     path: '/downloads',
     icon: 'activity:download',
     component: () => import('./downloads.vue')

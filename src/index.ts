@@ -9,7 +9,7 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  output: Schema.string().default('./nereid'),
+  output: Schema.string().default('./nereid').description('下载结束后的输出目录。'),
 })
 
 export const name = 'downloads'

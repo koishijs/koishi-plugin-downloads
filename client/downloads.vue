@@ -98,7 +98,7 @@ function toggle(task: ClientTask) {
   margin: 30px 20px 30px 20px;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 0 6px #AAAAAA;
+  box-shadow: 0 0 6px var(--downloads-shadow);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -124,5 +124,15 @@ function toggle(task: ClientTask) {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+</style>
+
+<style>
+:root {
+  --downloads-shadow: #AAAAAA;
+}
+
+html.dark {
+  --downloads-shadow: #222222;
 }
 </style>
