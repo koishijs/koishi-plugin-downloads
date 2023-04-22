@@ -11,6 +11,7 @@
             :indeterminate="indeterminate(task)"
             :percentage="indeterminate(task) ? 50 : Math.round(task.progress * 1000) / 10" />
           <el-button
+            v-if="task.status !== 'done'"
             circle
             :icon="downloading(task) ? Pause : Play"
             @click="toggle(task)" />

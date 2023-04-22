@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { Context, Schema } from 'koishi'
 import {} from '@koishijs/plugin-console'
+import { ClientDownloads } from './client'
 import { Downloads } from './service'
 
 export interface Config {
@@ -20,7 +21,9 @@ export function apply(ctx: Context, config: Config) {
       prod: resolve(__dirname, '../dist'),
     })
   })
+  ctx.plugin(ClientDownloads, config)
   ctx.plugin(Downloads, config)
 }
 
 export * from './service'
+export * from './client'
