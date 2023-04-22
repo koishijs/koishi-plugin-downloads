@@ -33,6 +33,7 @@ export class Downloads extends Service {
   }
 
   task(name: string, srcs: string[], bucket: string, options?: ResolveOptions): State {
+    if (this.tasks[name]) return this.tasks[name][0]
     const restart = () => {
       const state = sync(srcs, bucket, {
         ...options,
@@ -82,8 +83,19 @@ export class Downloads extends Service {
       })
       return state
     }
-    const state = restart()
+    const state = restart() 
     this.tasks[name] = [state, restart]
+    const current: Context = this[Context.current]
+    current.collect('tasks', () => {
+      const task = this.tasks[name]
+      if (!task) return false
+      if (task[0].status !== 'done') {
+        task[0].cancel()
+      }
+      delete this.tasks[name]
+      this.refresh()
+      return true
+    })
     this.refresh()
     return state
   }
