@@ -1,7 +1,7 @@
 import { Logger, Quester } from 'koishi'
 import { ResolveOptions, State, exists, sync } from 'nereid'
 import { resolve } from 'path'
-import { WriteStream, createReadStream, createWriteStream, promises as fsp } from 'fs'
+import { Stats, WriteStream, createReadStream, createWriteStream, promises as fsp } from 'fs'
 import { createHash } from 'crypto'
 import { Downloads } from './service'
 
@@ -20,10 +20,13 @@ export interface Task {
   restart(): void
   pause(): void
   cancel(): void
+  promise: Promise<string>
 }
 
 export class NereidTask implements Task {
   state: State
+  promise: Promise<string>
+  private resolve: (path: string) => void
 
   constructor(
     public name: string,
@@ -31,7 +34,9 @@ export class NereidTask implements Task {
     public srcs: string[],
     public bucket: string,
     public options: ResolveOptions,
-  ) {}
+  ) {
+    this.promise = new Promise((resolve) => this.resolve = resolve)
+  }
 
   get progress() {
     return this.state?.progress() || 0
@@ -128,9 +133,10 @@ export class NereidTask implements Task {
       this.downloads.message(error.message)
       this.downloads.refresh()
     })
-    state.on('done', () => {
+    state.on('done', (path) => {
       this.downloads.message(`${this.name} 下载成功`)
       this.downloads.refresh()
+      this.resolve(path)
     })
     this.state = state
   }
@@ -140,14 +146,16 @@ export class SimpleTask implements Task {
   current = 0
   total = -1
 
-  status: Status = 'warning'
-  button: Button = 'none'
-  indeterminate: boolean = true
+  status: Status
+  button: Button
+  indeterminate: boolean
 
   path: string
   stream: WriteStream
 
   abort: AbortController
+  promise: Promise<string>
+  private resolve: (path: string) => void
 
   constructor(
     public name: string,
@@ -162,6 +170,7 @@ export class SimpleTask implements Task {
     public hash?: string
   ) {
     this.path = resolve(this.prefix, this.filename)
+    this.promise = new Promise((resolve) => this.resolve = resolve)
   }
 
   get progress() {
@@ -170,9 +179,11 @@ export class SimpleTask implements Task {
   }
 
   async restart() {
+    if (this.abort) this.abort.abort()
     this.setStatus('warning', 'none', true)
     this.abort = new AbortController()
     let headers: Record<string, string>
+    let stat: Stats
     try {
       const response = await this.http.axios({
         url: this.url,
@@ -182,32 +193,26 @@ export class SimpleTask implements Task {
         signal: this.abort.signal,
       })
       headers = response.headers
+      stat = await fsp.stat(this.path)
     } catch (error) {
-      this.setStatus('exception', 'play', false)
-      logger.error(error)
-      return
+      if (error?.code !== 'ENOENT') {
+        this.setStatus('exception', 'play', false)
+        logger.error(error)
+        return
+      }
     }
     const length = headers['content-length']
     if (length) {
       this.total = +length
-      try {
-        const stat = await fsp.stat(this.path)
-        this.current = stat.size
-        if (await this.verify()) {
-          this.setStatus('success', 'none', false)
-          return
-        }
-      } catch (error) {
-        if (error?.code !== 'ENOENT') {
-          this.setStatus('exception', 'play', false)
-          logger.error(error)
-          return
-        }
+    }
+    if (stat) {
+      this.current = stat.size
+      if (this.total === -1) {
+        this.total = this.current
       }
-    } else {
-      if (await exists(this.path)) {
-        this.total = this.current = 1
+      if (await this.verify()) {
         this.setStatus('success', 'none', false)
+        this.resolve(this.path)
         return
       }
     }
@@ -242,8 +247,9 @@ export class SimpleTask implements Task {
           this.total = this.current
         }
         this.setStatus('success', 'none', false)
+        this.resolve(this.path)
       })
-      response.data.on('error', error => {
+      response.data.on('error', (error) => {
         if (error?.code !== 'ERR_CANCELED') {
           this.setStatus('exception', 'play', false)
           logger.error(error)
