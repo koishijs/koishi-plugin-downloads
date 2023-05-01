@@ -16,6 +16,11 @@
             circle
             :icon="task.button === 'pause' ? Pause : Play"
             @click="toggle(task)" />
+          <el-button
+            v-if="task.button !== 'none'"
+            circle
+            :icon="Xmark"
+            @click="cancel(task)" />
           <!-- TODO: cancel button -->
         </div>
       </virtual-list>
@@ -31,7 +36,7 @@
 <script lang="ts" setup>
 import { VirtualList, store, send, receive } from '@koishijs/client'
 import { computed, ref } from 'vue'
-import { Play, Pause } from './icons'
+import { Play, Pause, Xmark } from './icons'
 import { ClientTask } from '..'
 
 const list = computed(() => store.downloads.sort((_, b) => b.progress === 1 ? -1 : 1))
@@ -54,6 +59,10 @@ function toggle(task: ClientTask) {
   } else {
     send('download/start', task.name)
   }
+}
+
+function cancel(task: ClientTask) {
+  send('download/cancel', task.name)
 }
 
 </script>

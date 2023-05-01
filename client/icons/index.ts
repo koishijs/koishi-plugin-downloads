@@ -3,8 +3,9 @@ import Play from './play.vue'
 import Pause from './pause.vue'
 import Download from './download.vue'
 import Open from './open.vue'
+import Xmark from './xmark.vue'
 
 icons.register('activity:download', Download)
 icons.register('folder-open', Open)
 
-export { Play, Pause }
+export { Play, Pause, Xmark }

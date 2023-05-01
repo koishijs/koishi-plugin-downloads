@@ -136,7 +136,7 @@ export class NereidTask implements Task {
   }
 }
 
-export class NormalTask implements Task {
+export class SimpleTask implements Task {
   current = 0
   total = -1
 
@@ -266,6 +266,7 @@ export class NormalTask implements Task {
       await new Promise(resolve => this.stream.close(resolve))
     if (!await this.verify()) {
       await fsp.rm(this.path, { force: true })
+      this.current = 0
       this.setStatus('exception', 'play', false)
     }
   }

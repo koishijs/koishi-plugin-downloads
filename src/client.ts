@@ -15,6 +15,7 @@ declare module '@koishijs/plugin-console' {
   interface Events {
     'download/start'(name: string): void
     'download/pause'(name: string): void
+    'download/cancel'(name: string): void
     'download/message'(text: string): void
     'download/open-folder'(): void
   }
@@ -45,6 +46,10 @@ export class ClientDownloads extends DataService<ClientTask[]> {
     }, { authority: 3 })
     ctx.console.addListener('download/pause', (name) => {
       this.tasks[name]?.pause()
+      this.refresh()
+    }, { authority: 3 })
+    ctx.console.addListener('download/cancel', (name) => {
+      this.tasks[name]?.cancel()
       this.refresh()
     }, { authority: 3 })
     ctx.console.addListener('download/open-folder', () => {

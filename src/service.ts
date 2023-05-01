@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs'
 import { Context, Service } from 'koishi'
 import { ResolveOptions } from 'nereid'
-import { NereidTask, NormalTask, Task } from './tasks'
+import { NereidTask, SimpleTask, Task } from './tasks'
 import { Config } from '.'
 
 declare module 'koishi' {
@@ -45,14 +45,14 @@ export class Downloads extends Service {
     return task
   }
 
-  normal(name: string, url: string, filename: string, options: {
+  simple(name: string, url: string, filename: string, options: {
     headers?: Record<string, string>,
     timeout?: number,
     hashMode?: string,
     hash?: string
-  } = {}): NormalTask {
+  } = {}): SimpleTask {
     if (this.tasks[name]) return this.tasks[name] as any
-    const task = new NormalTask(
+    const task = new SimpleTask(
       name, this, this.config.output, url,
       this.ctx.http, options.headers, filename,
       options.timeout, options.hashMode, options.hash,
