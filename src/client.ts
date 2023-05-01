@@ -1,9 +1,9 @@
 import { Context } from 'koishi'
 import { DataService } from '@koishijs/plugin-console'
-import { State } from 'nereid'
 import { debounce } from 'throttle-debounce'
 import open from 'open'
 import { Config } from '.'
+import { Button, Status } from './tasks'
 
 declare module '@koishijs/plugin-console' {
   namespace Console {
@@ -23,7 +23,9 @@ declare module '@koishijs/plugin-console' {
 export interface ClientTask {
   name: string
   progress: number
-  status: State['status']
+  status: Status
+  button: Button
+  indeterminate: boolean
 }
 
 const clearMessage = debounce(3000, (ctx: Context) => {
@@ -38,16 +40,11 @@ export class ClientDownloads extends DataService<ClientTask[]> {
     ctx.console.addListener('download/start', (name) => {
       const task = this.tasks[name]
       if (!task) return
-      if (['failed', 'canceled'].includes(task[0].status)) {
-        this.tasks[name] = [task[1](), task[1]]
-        this.refresh()
-      } else {
-        this.tasks[name]?.[0].resume()
-        this.refresh()
-      }
+      task.restart()
+      this.refresh()
     }, { authority: 3 })
     ctx.console.addListener('download/pause', (name) => {
-      this.tasks[name]?.[0].pause()
+      this.tasks[name]?.pause()
       this.refresh()
     }, { authority: 3 })
     ctx.console.addListener('download/open-folder', () => {
@@ -71,10 +68,12 @@ export class ClientDownloads extends DataService<ClientTask[]> {
   }
 
   async get() {
-    return Object.entries(this.tasks).map(([name, [task]]) => ({
+    return Object.entries(this.tasks).map(([name, task]) => ({
       name,
-      progress: task.progress(),
+      progress: task.progress,
       status: task.status,
+      button: task.button,
+      indeterminate: task.indeterminate,
     }))
   }
 }

@@ -8,13 +8,13 @@
           <div class="name">{{ task.name }}</div>
           <el-progress
             class="progress"
-            :status="status(task)"
-            :indeterminate="indeterminate(task)"
-            :percentage="indeterminate(task) ? 50 : Math.round(task.progress * 1000) / 10" />
+            :status="task.status"
+            :indeterminate="task.indeterminate"
+            :percentage="task.indeterminate ? 50 : Math.round(task.progress * 1000) / 10" />
           <el-button
-            v-if="task.status !== 'done'"
+            v-if="task.button !== 'none'"
             circle
-            :icon="downloading(task) ? Pause : Play"
+            :icon="task.button === 'pause' ? Pause : Play"
             @click="toggle(task)" />
         </div>
       </virtual-list>
@@ -46,35 +46,9 @@ receive('download/message', (text) => {
   message.value = text
 })
 
-function status(task: ClientTask) {
-  if (indeterminate(task)) {
-    return 'warning'
-  }
-  switch (task.status) {
-    case 'downloading':
-    case 'checking':
-    case 'linking':
-    case 'pause':
-      return null
-    case 'canceled':
-    case 'failed':
-      return 'exception'
-    case 'done':
-      return 'success'
-  }
-}
-
-function indeterminate(task: ClientTask) {
-  return ['checking', 'linking'].includes(task.status)
-}
-
-function downloading(task: ClientTask) {
-  return ['checking', 'downloading', 'linking'].includes(task.status)
-}
-
 function toggle(task: ClientTask) {
-  const pause = downloading(task)
-  if (pause) {
+  if (task.button === 'none') return
+  if (task.button === 'pause') {
     send('download/pause', task.name)
   } else {
     send('download/start', task.name)
