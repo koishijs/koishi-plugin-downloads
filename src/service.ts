@@ -45,11 +45,17 @@ export class Downloads extends Service {
     return task
   }
 
-  normal(name: string, url: string, filename: string, headers?: Record<string, string>, timeout?: number) {
+  normal(name: string, url: string, filename: string, options: {
+    headers?: Record<string, string>,
+    timeout?: number,
+    hashMode?: string,
+    hash?: string
+  } = {}): NormalTask {
     if (this.tasks[name]) return this.tasks[name] as any
     const task = new NormalTask(
       name, this, this.config.output, url,
-      this.ctx.http, headers, filename, timeout
+      this.ctx.http, options.headers, filename,
+      options.timeout, options.hashMode, options.hash,
     )
     this.register(name, task)
     return task

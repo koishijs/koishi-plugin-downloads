@@ -1,7 +1,8 @@
 import { Logger, Quester } from 'koishi'
 import { ResolveOptions, State, exists, sync } from 'nereid'
 import { resolve } from 'path'
-import { WriteStream, createWriteStream, promises as fsp } from 'fs'
+import { WriteStream, createReadStream, createWriteStream, promises as fsp } from 'fs'
+import { createHash } from 'crypto'
 import { Downloads } from './service'
 
 const logger = new Logger('downloads')
@@ -157,6 +158,8 @@ export class NormalTask implements Task {
     public headers: Record<string, string> = {},
     public filename: string,
     public timeout?: number,
+    public hashMode?: string,
+    public hash?: string
   ) {
     this.path = resolve(this.prefix, this.filename)
   }
@@ -190,7 +193,7 @@ export class NormalTask implements Task {
       try {
         const stat = await fsp.stat(this.path)
         this.current = stat.size
-        if (stat.size === this.total) {
+        if (await this.verify()) {
           this.setStatus('success', 'none', false)
           return
         }
@@ -235,7 +238,9 @@ export class NormalTask implements Task {
       })
       response.data.on('end', () => {
         this.stream.end()
-        this.total = this.current = 1
+        if (this.total === -1) {
+          this.total = this.current
+        }
         this.setStatus('success', 'none', false)
       })
       response.data.on('error', error => {
@@ -256,10 +261,31 @@ export class NormalTask implements Task {
   }
 
   async cancel() {
+    this.abort?.abort()
     if (this.stream)
       await new Promise(resolve => this.stream.close(resolve))
-    await fsp.rm(this.path, { force: true })
-    this.abort?.abort()
+    if (!await this.verify()) {
+      await fsp.rm(this.path, { force: true })
+      this.setStatus('exception', 'play', false)
+    }
+  }
+
+  async verify() {
+    try {
+      const stat = await fsp.stat(this.path)
+      if (stat.size !== this.total) return false
+      if (!this.hashMode) return true
+      const stream = createReadStream(this.path)
+      const hasher = createHash(this.hashMode)
+      const hash = await new Promise<string>((resolve, reject) => {
+        stream.pipe(hasher).on('finish', () => {
+          resolve(hasher.digest('hex'))
+        }).on('error', reject)
+      })
+      return hash === this.hash
+    } catch (error) {
+      return false
+    }
   }
 
   private setStatus(status: Status, button: Button, indeterminate: boolean) {

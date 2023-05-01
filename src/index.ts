@@ -27,3 +27,4 @@ export function apply(ctx: Context, config: Config) {
 
 export * from './service'
 export * from './client'
+export * from './tasks'
