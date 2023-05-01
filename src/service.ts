@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs'
 import { Context, Service } from 'koishi'
 import { ResolveOptions } from 'nereid'
-import { NereidTask, Task } from './tasks'
+import { NereidTask, NormalTask, Task } from './tasks'
 import { Config } from '.'
 
 declare module 'koishi' {
@@ -32,15 +32,25 @@ export class Downloads extends Service {
   }
 
   async start() {
-    await fsp.mkdir(this.config.output)
+    await fsp.mkdir(this.config.output, { recursive: true })
   }
   
   nereid(name: string, srcs: string[], bucket: string, options?: Omit<ResolveOptions, 'output'>): NereidTask {
-    if (this.tasks[name]) return this.tasks[name][0]
+    if (this.tasks[name]) return this.tasks[name] as any
     const task = new NereidTask(name, this, srcs, bucket, {
       ...options,
       output: this.config.output,
     })
+    this.register(name, task)
+    return task
+  }
+
+  normal(name: string, url: string, filename: string, headers?: Record<string, string>, timeout?: number) {
+    if (this.tasks[name]) return this.tasks[name] as any
+    const task = new NormalTask(
+      name, this, this.config.output, url,
+      this.ctx.http, headers, filename, timeout
+    )
     this.register(name, task)
     return task
   }

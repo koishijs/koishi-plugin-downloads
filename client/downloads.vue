@@ -16,6 +16,7 @@
             circle
             :icon="task.button === 'pause' ? Pause : Play"
             @click="toggle(task)" />
+          <!-- TODO: cancel button -->
         </div>
       </virtual-list>
     </div>

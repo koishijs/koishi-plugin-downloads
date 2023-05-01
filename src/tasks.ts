@@ -1,5 +1,10 @@
-import { ResolveOptions, State, sync } from 'nereid'
+import { Logger, Quester } from 'koishi'
+import { ResolveOptions, State, exists, sync } from 'nereid'
+import { resolve } from 'path'
+import { WriteStream, createWriteStream, promises as fsp } from 'fs'
 import { Downloads } from './service'
+
+const logger = new Logger('downloads')
 
 export type Status = 'warning' | 'exception' | 'success'
 export type Button = 'play' | 'pause' | 'none'
@@ -127,5 +132,140 @@ export class NereidTask implements Task {
       this.downloads.refresh()
     })
     this.state = state
+  }
+}
+
+export class NormalTask implements Task {
+  current = 0
+  total = -1
+
+  status: Status = 'warning'
+  button: Button = 'none'
+  indeterminate: boolean = true
+
+  path: string
+  stream: WriteStream
+
+  abort: AbortController
+
+  constructor(
+    public name: string,
+    public downloads: Downloads,
+    public prefix: string,
+    public url: string,
+    public http: Quester,
+    public headers: Record<string, string> = {},
+    public filename: string,
+    public timeout?: number,
+  ) {
+    this.path = resolve(this.prefix, this.filename)
+  }
+
+  get progress() {
+    if (this.total === -1) return 0
+    return this.current / this.total
+  }
+
+  async restart() {
+    this.setStatus('warning', 'none', true)
+    this.abort = new AbortController()
+    let headers: Record<string, string>
+    try {
+      const response = await this.http.axios({
+        url: this.url,
+        method: 'HEAD',
+        headers: this.headers,
+        timeout: this.timeout,
+        signal: this.abort.signal,
+      })
+      headers = response.headers
+    } catch (error) {
+      this.setStatus('exception', 'play', false)
+      logger.error(error)
+      return
+    }
+    const length = headers['content-length']
+    if (length) {
+      this.total = +length
+      try {
+        const stat = await fsp.stat(this.path)
+        this.current = stat.size
+        if (stat.size === this.total) {
+          this.setStatus('success', 'none', false)
+          return
+        }
+      } catch (error) {
+        if (error?.code !== 'ENOENT') {
+          this.setStatus('exception', 'play', false)
+          logger.error(error)
+          return
+        }
+      }
+    } else {
+      if (await exists(this.path)) {
+        this.total = this.current = 1
+        this.setStatus('success', 'none', false)
+        return
+      }
+    }
+    try {
+      const headersWithRange = { ...this.headers }
+      if (this.current !== 0) headersWithRange['Range'] = `bytes=${this.current}-`
+      const response = await this.http.axios({
+        url: this.url,
+        method: 'GET',
+        headers: headersWithRange,
+        responseType: 'stream',
+        timeout: this.timeout,
+        signal: this.abort.signal,
+      })
+      this.setStatus(null, 'pause', false)
+      if (response.status === 200) {
+        if (this.stream)
+          await new Promise(resolve => this.stream.close(resolve))
+        await fsp.rm(this.path, { force: true })
+        this.stream = createWriteStream(this.path)
+        this.current = 0
+      }
+      if (!this.stream) this.stream = createWriteStream(this.path)
+            response.data.on('data', data => {
+        if (typeof data === 'string') data = Buffer.from(data)
+        this.stream.write(data)
+        this.current += data.byteLength
+      })
+      response.data.on('end', () => {
+        this.stream.end()
+        this.total = this.current = 1
+        this.setStatus('success', 'none', false)
+      })
+      response.data.on('error', error => {
+        if (error?.code !== 'ERR_CANCELED') {
+          this.setStatus('exception', 'play', false)
+          logger.error(error)
+        }
+      })
+    } catch(error) {
+      this.setStatus('exception', 'play', false)
+      logger.error(error)
+    }
+  }
+
+  pause() {
+    this.abort?.abort()
+    this.setStatus(null, 'play', false)
+  }
+
+  async cancel() {
+    if (this.stream)
+      await new Promise(resolve => this.stream.close(resolve))
+    await fsp.rm(this.path, { force: true })
+    this.abort?.abort()
+  }
+
+  private setStatus(status: Status, button: Button, indeterminate: boolean) {
+    this.status = status
+    this.button = button
+    this.indeterminate = indeterminate
+    this.downloads.refresh()
   }
 }
