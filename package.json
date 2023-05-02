@@ -1,8 +1,9 @@
 {
   "name": "koishi-plugin-downloads",
   "version": "1.0.0",
+  "description": "Download plugin for koishi",
   "main": "lib/index.js",
-  "repository": "https://github.com/Anillc/koishi-plugin-downloads.git",
+  "repository": "https://github.com/koishijs/koishi-plugin-downloads.git",
   "author": "Anillc <void@anillc.cn>",
   "license": "MIT",
   "dependencies": {
