@@ -45,7 +45,7 @@ export class Downloads extends Service {
     return task
   }
 
-  simple(name: string, url: string, filename: string, options: {
+  private simple(name: string, url: string, filename: string, options: {
     headers?: Record<string, string>,
     timeout?: number,
     hashMode?: string,
