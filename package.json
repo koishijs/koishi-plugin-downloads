@@ -1,26 +1,62 @@
 {
   "name": "koishi-plugin-downloads",
-  "version": "1.0.0",
-  "description": "Download plugin for koishi",
+  "description": "Download Service for koishi",
+  "version": "0.1.0",
   "main": "lib/index.js",
-  "repository": "https://github.com/koishijs/koishi-plugin-downloads.git",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
   "author": "Anillc <void@anillc.cn>",
   "license": "MIT",
+  "repository": "https://github.com/koishijs/koishi-plugin-downloads.git",
+  "bugs": {
+    "url": "https://github.com/koishijs/koishi-plugin-downloads/issues"
+  },
+  "homepage": "https://downloads.koishi.chat",
+  "scripts": {
+    "docs:build": "vitepress build docs",
+    "docs:dev": "vitepress dev docs",
+    "build:server": "tsc -b",
+    "build:client": "koishi-console build",
+    "build": "yarn build:server && yarn build:client"
+  },
+  "keywords": [
+    "bot",
+    "chatbot",
+    "koishi",
+    "plugin",
+    "download",
+    "service",
+    "assets",
+    "resources",
+    "files"
+  ],
+  "koishi": {
+    "description": {
+      "zh": "通用下载服务",
+      "en": "Download Service for koishi"
+    },
+    "service": {
+      "implements": [
+        "downloads"
+      ]
+    }
+  },
   "dependencies": {
     "nereid": "^0.0.5",
     "open": "^8.4.2",
     "throttle-debounce": "^5.0.0"
   },
   "peerDependencies": {
-    "koishi": "^4.12.5"
+    "koishi": "^4.13.2"
   },
   "devDependencies": {
-    "@koishijs/vitepress": "^2.0.7",
-    "@koishijs/client": "^5.6.1",
-    "@koishijs/plugin-console": "^5.6.1",
+    "@koishijs/vitepress": "^2.2.0",
+    "@koishijs/client": "^5.11.0",
+    "@koishijs/plugin-console": "^5.11.0",
+    "koishi": "^4.13.2",
     "vitepress": "^1.0.0-alpha.75"
-  },
-  "resolutions": {
-    "@vueuse/core": "9.13.0"
   }
 }
