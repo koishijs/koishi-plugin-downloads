@@ -28,7 +28,7 @@ yarn nereid-cli build bucket2
 
 ### http
 
-如果你有可以提供 http 服务的服务器，或者使用 [alist](github.com/alist-org/alist) 等服务，将构建好的 nereid 目录下所有内容上传至服务器上即可。此时的下载链接即为下载源。
+如果你有可以提供 http 服务的服务器，或者使用 [alist](https://github.com/alist-org/alist) 等服务，将构建好的 nereid 目录下所有内容上传至服务器上即可。此时的下载链接即为下载源。
 
 下载源链接示例: `https://example.com/foo/bar`
 
