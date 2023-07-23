@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-downloads",
   "description": "Download Service for koishi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -53,9 +53,9 @@
     "koishi": "^4.13.2"
   },
   "devDependencies": {
-    "@koishijs/vitepress": "^2.2.0",
     "@koishijs/client": "^5.11.0",
     "@koishijs/plugin-console": "^5.11.0",
+    "@koishijs/vitepress": "^2.2.0",
     "koishi": "^4.13.2",
     "vitepress": "^1.0.0-alpha.75"
   }
