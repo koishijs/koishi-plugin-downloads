@@ -63,20 +63,20 @@ import {} from 'koishi-plugin-downloads'
 export const using = ['downloads']
 
 export function apply(ctx: Context) {
-  const promise1 = ctx.downloads.nereid('task1', [
+  const task1 = ctx.downloads.nereid('task1', [
     'npm://@foo/bar',
     'npm://@foo/bar?registry=https://registry.npmmirror.com',
     'https://example.com/foo/bar',
   ], 'bucket1')
-  const promise2 = ctx.downloads.nereid('task2', [
+  const task2 = ctx.downloads.nereid('task2', [
     'npm://@foo/bar',
     'npm://@foo/bar?registry=https://registry.npmmirror.com',
     'https://example.com/foo/bar',
   ], 'bucket2')
-  promise1.then((path) => {
+  task1.promise.then((path) => {
     console.log(path)
   })
-  promise2.then((path) => {
+  task2.promise.then((path) => {
     console.log(path)
   })
 }
