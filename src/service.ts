@@ -10,6 +10,9 @@ declare module 'koishi' {
   }
 }
 export class Downloads extends Service {
+  static inject = {
+    optional: ['console']
+  }
   tasks: Record<string, Task> = {}
 
   constructor(
