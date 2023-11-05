@@ -10,9 +10,6 @@ declare module 'koishi' {
   }
 }
 export class Downloads extends Service {
-  static inject = {
-    optional: ['console']
-  }
   tasks: Record<string, Task> = {}
 
   constructor(
@@ -24,13 +21,13 @@ export class Downloads extends Service {
 
   refresh() {
     if (this.ctx.console?.downloads) {
-      this.ctx.console.downloads.refresh()
+      this.ctx.get('console.downloads')?.refresh()
     }
   }
 
   message(text: string) {
     if (this.ctx.console?.downloads) {
-      this.ctx.console.downloads.message(text)
+      this.ctx.get('console.downloads')?.message(text)
     }
   }
 
