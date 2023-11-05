@@ -1,7 +1,7 @@
-import { Logger, Quester } from 'koishi'
-import { ResolveOptions, State, exists, sync } from 'nereid'
+import { Dict, Logger, Quester } from 'koishi'
+import { ResolveOptions, State, sync } from 'nereid'
 import { resolve } from 'path'
-import { Stats, WriteStream, createReadStream, createWriteStream, promises as fsp } from 'fs'
+import { createReadStream, createWriteStream, promises as fsp, Stats, WriteStream } from 'fs'
 import { createHash } from 'crypto'
 import { Downloads } from './service'
 
@@ -163,11 +163,11 @@ export class SimpleTask implements Task {
     public prefix: string,
     public url: string,
     public http: Quester,
-    public headers: Record<string, string> = {},
+    public headers: Record<string, string>,
     public filename: string,
     public timeout?: number,
     public hashMode?: string,
-    public hash?: string
+    public hash?: string,
   ) {
     this.path = resolve(this.prefix, this.filename)
     this.promise = new Promise((resolve) => this.resolve = resolve)
@@ -182,7 +182,7 @@ export class SimpleTask implements Task {
     if (this.abort) this.abort.abort()
     this.setStatus('warning', 'none', true)
     this.abort = new AbortController()
-    let headers: Record<string, string>
+    let headers: Dict
     let stat: Stats
     try {
       const response = await this.http.axios({
@@ -229,14 +229,13 @@ export class SimpleTask implements Task {
       })
       this.setStatus(null, 'pause', false)
       if (response.status === 200) {
-        if (this.stream)
-          await new Promise(resolve => this.stream.close(resolve))
+        if (this.stream) { await new Promise(resolve => this.stream.close(resolve)) }
         await fsp.rm(this.path, { force: true })
         this.stream = createWriteStream(this.path)
         this.current = 0
       }
       if (!this.stream) this.stream = createWriteStream(this.path)
-            response.data.on('data', data => {
+      response.data.on('data', data => {
         if (typeof data === 'string') data = Buffer.from(data)
         this.stream.write(data)
         this.current += data.byteLength
@@ -255,7 +254,7 @@ export class SimpleTask implements Task {
           logger.error(error)
         }
       })
-    } catch(error) {
+    } catch (error) {
       this.setStatus('exception', 'play', false)
       logger.error(error)
     }
@@ -268,8 +267,9 @@ export class SimpleTask implements Task {
 
   async cancel() {
     this.abort?.abort()
-    if (this.stream)
+    if (this.stream) {
       await new Promise(resolve => this.stream.close(resolve))
+    }
     if (!await this.verify()) {
       await fsp.rm(this.path, { force: true })
       this.current = 0

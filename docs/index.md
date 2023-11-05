@@ -60,7 +60,7 @@ yarn nereid-cli build bucket2
 import { Context } from 'koishi'
 import {} from 'koishi-plugin-downloads'
 
-export const using = ['downloads']
+export const inject = ['downloads']
 
 export function apply(ctx: Context) {
   const task1 = ctx.downloads.nereid('task1', [

@@ -34,7 +34,7 @@ const clearMessage = debounce(3000, (ctx: Context) => {
 })
 
 export class ClientDownloads extends DataService<ClientTask[]> {
-  static using = ['console', 'downloads']
+  static inject = ['console', 'downloads']
 
   constructor(public ctx: Context, public config: Config) {
     super(ctx, 'downloads')
