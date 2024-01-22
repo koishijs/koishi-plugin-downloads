@@ -50,14 +50,13 @@
     "throttle-debounce": "^5.0.0"
   },
   "peerDependencies": {
-    "koishi": "^4.13.2"
+    "koishi": "^4.15.4"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.11.0",
-    "@koishijs/plugin-console": "^5.11.0",
-    "@koishijs/vitepress": "^2.2.0",
-    "koishi": "^4.16.6",
-    "typescript": "^5.3.3",
-    "vitepress": "^1.0.0-alpha.75"
+    "@koishijs/client": "^5.18.1",
+    "@koishijs/plugin-console": "^5.18.1",
+    "@koishijs/vitepress": "^3.0.1",
+    "koishi": "^4.15.4",
+    "vitepress": "1.0.0-rc.24"
   }
 }

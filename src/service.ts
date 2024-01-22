@@ -9,6 +9,7 @@ declare module 'koishi' {
     downloads: Downloads
   }
 }
+
 export class Downloads extends Service {
   tasks: Record<string, Task> = {}
 
@@ -20,25 +21,17 @@ export class Downloads extends Service {
   }
 
   refresh() {
-    this.ctx.inject(['console'], ctx => {
-      if (ctx.console.downloads) {
-        this.ctx.console.downloads.refresh()
-      }
-    })
+    this.ctx.get('console.downloads')?.refresh()
   }
 
   message(text: string) {
-    this.ctx.inject(['console'], ctx => {
-      if (ctx.console.downloads) {
-        this.ctx.console.downloads.message(text)
-      }
-    })
+    this.ctx.get('console.downloads')?.message(text)
   }
 
   async start() {
     await fsp.mkdir(this.config.output, { recursive: true })
   }
-  
+
   nereid(name: string, srcs: string[], bucket: string, options?: Omit<ResolveOptions, 'output'>): NereidTask {
     if (this.tasks[name]) return this.tasks[name] as any
     const task = new NereidTask(name, this, srcs, bucket, {
@@ -50,9 +43,9 @@ export class Downloads extends Service {
   }
 
   private simple(name: string, url: string, filename: string, options: {
-    headers?: Record<string, string>,
-    timeout?: number,
-    hashMode?: string,
+    headers?: Record<string, string>
+    timeout?: number
+    hashMode?: string
     hash?: string
   } = {}): SimpleTask {
     if (this.tasks[name]) return this.tasks[name] as any
