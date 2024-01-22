@@ -182,7 +182,7 @@ export class SimpleTask implements Task {
     if (this.abort) this.abort.abort()
     this.setStatus('warning', 'none', true)
     this.abort = new AbortController()
-    let headers: Record<string, string>
+    let headers: Record<string, any>
     let stat: Stats
     try {
       const response = await this.http.axios({

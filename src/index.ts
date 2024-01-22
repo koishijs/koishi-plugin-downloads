@@ -15,7 +15,7 @@ export const Config: Schema<Config> = Schema.object({
 export const name = 'downloads'
 
 export function apply(ctx: Context, config: Config) {
-  ctx.using(['console'], (ctx) => {
+  ctx.inject(['console'], (ctx) => {
     ctx.console.addEntry({
       dev: resolve(__dirname, '../client/index.ts'),
       prod: resolve(__dirname, '../dist'),

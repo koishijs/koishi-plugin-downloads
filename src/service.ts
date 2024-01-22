@@ -20,15 +20,19 @@ export class Downloads extends Service {
   }
 
   refresh() {
-    if (this.ctx.console?.downloads) {
-      this.ctx.console.downloads.refresh()
-    }
+    this.ctx.inject(['console'], ctx => {
+      if (ctx.console.downloads) {
+        this.ctx.console.downloads.refresh()
+      }
+    })
   }
 
   message(text: string) {
-    if (this.ctx.console?.downloads) {
-      this.ctx.console.downloads.message(text)
-    }
+    this.ctx.inject(['console'], ctx => {
+      if (ctx.console.downloads) {
+        this.ctx.console.downloads.message(text)
+      }
+    })
   }
 
   async start() {
@@ -62,16 +66,17 @@ export class Downloads extends Service {
   }
 
   private register(name: string, task: Task) {
-    this.tasks[name] = task
-    task.restart()
-    this.caller.collect('tasks', () => {
-      const task = this.tasks[name]
-      if (!task) return false
-      task.cancel()
-      delete this.tasks[name]
+    this[Context.current].effect(() => {
+      this.tasks[name] = task
+      task.restart()
       this.refresh()
-      return true
+      return () => {
+        const task = this.tasks[name]
+        if (!task) return
+        task.cancel()
+        delete this.tasks[name]
+        this.refresh()
+      }
     })
-    this.refresh()
   }
 }

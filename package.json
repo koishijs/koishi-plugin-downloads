@@ -56,7 +56,8 @@
     "@koishijs/client": "^5.11.0",
     "@koishijs/plugin-console": "^5.11.0",
     "@koishijs/vitepress": "^2.2.0",
-    "koishi": "^4.13.2",
+    "koishi": "^4.16.6",
+    "typescript": "^5.3.3",
     "vitepress": "^1.0.0-alpha.75"
   }
 }
